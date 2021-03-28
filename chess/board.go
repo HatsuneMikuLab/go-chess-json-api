@@ -43,6 +43,18 @@ func (b *Board) isAttacked(square int) bool {
 			}
 		}
 	}
+	opponentPawns := bpawn
+	if b.MovesNext == black {
+		opponentPawns = wpawn
+	}
+	for _, offset := range pawnCaptureVectors[opponentPawns] {
+		targetSquare := square + offset
+		if isOnBoard(targetSquare) && 
+		getPieceSide(b.Pieces[targetSquare]) == b.MovesNext {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *Board) GenAllowedMoves() {
