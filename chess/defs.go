@@ -12,12 +12,8 @@ const (
 	queen  = 7
 
 	// SIDES
-	white = 0
-	black = 1
-
-	// PIECE GROUPS
-	leaper = 0
-	rangePiece = 1
+	white = 1
+	black = -1
 
 	// PIECE MOVE OFFSETS REPRESENTATION:
 	up        = -16 // WE RESERVED 8 BITS FOR OFFBOARD DETECTION FUNCTION
@@ -55,8 +51,11 @@ func isOnBoard(square int) bool {
 }
 
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]
-func getPieceSide(piece byte) byte {
-	return (piece >> 3) & 1
+func getPieceSide(piece byte) int {
+	if piece >> 3 == 0 {
+		return 1
+	}
+	return -1
 }
 
 // TYPE IS REPRESENTED BY 3 LAST BITS, 7 IS A MAX VALUE 

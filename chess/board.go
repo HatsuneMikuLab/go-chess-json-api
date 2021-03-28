@@ -11,19 +11,37 @@ type Board struct {
 	HalfmoveClock byte
 }
 
-func (b *Board) ForwardMove(move [2]int) byte { // [0]FROM [1]TO
+func (b *Board) forwardMove(move [2]int) byte { // [0]FROM [1]TO
 	capturedPiece := b.Pieces[move[1]]
 	b.Pieces[move[1]] = b.Pieces[move[0]]
 	b.Pieces[move[0]] = empty
+	b.MovesNext = -1 * b.MovesNext
 	return capturedPiece 
 }
 
-func (b *Board) UndoMove(move [2]int, capturedPiece byte) { // [0]FROM [1]TO
+func (b *Board) undoMove(move [2]int, capturedPiece byte) { // [0]FROM [1]TO
 	b.Pieces[move[0]] = b.Pieces[move[1]]
+	b.MovesNext = -1 * b.MovesNext
 	if capturedPiece == empty {
 		delete(b.Pieces, move[1])
 	} else {
 		b.Pieces[move[1]] = capturedPiece
+	}
+}
+
+func (b *Board) isAttacked(square int) bool {
+	for pieceType, offsetSlice := range moveVectors {
+		for _, offset := range offsetSlice {
+			targetSquare := square + offset
+			for isOnBoard(targetSquare) && b.Pieces[targetSquare] == empty {
+				targetSquare += offset
+			}
+			if isOnBoard(targetSquare) && 
+			getPieceSide(b.Pieces[targetSquare]) == b.MovesNext &&
+			getPieceType(b.Pieces[targetSquare]) == pieceType {
+				return true
+			}
+		}
 	}
 }
 
