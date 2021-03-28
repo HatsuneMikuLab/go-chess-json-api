@@ -13,6 +13,12 @@ type Board struct {
 	HalfmoveClock byte
 }
 
+func SetupStartPosition() *Board {
+	return &Board {
+
+	}
+}
+
 func (b *Board) forwardMove(move Move) byte { // [0]FROM [1]TO
 	if b.Pieces[move[0]] == king {
 		b.Kings[b.MovesNext] = move[1]
@@ -65,7 +71,7 @@ func (b *Board) isAttacked(square int) bool {
 	return false
 }
 
-func (b *Board) GenAllowedMoves() {
+func (b *Board) GenAllowedMoves() []Move {
 	pseudoMoves := make([]Move, 0, 200)
 	pseudoCaptures := make([]Move, 0, 200)
 	output := make([]Move, 0, 200)
@@ -79,7 +85,7 @@ func (b *Board) GenAllowedMoves() {
 			maxDistance = 7
 		}
 		// FIND ALL PSEUDO-VALID MOVES AND CAPTURES FOR ALL PIECE TYPES EXCEPT PAWN
-		for index, offset := range moveVectors[getPieceType(piece)] {
+		for _, offset := range moveVectors[getPieceType(piece)] {
 			targetSquare := square + offset
 			
 			for isOnBoard(targetSquare) && maxDistance > 0 {
@@ -98,7 +104,7 @@ func (b *Board) GenAllowedMoves() {
 		// FIND ALL PSEUDO-VALID PAWN CAPTURES
 		for _, offset := range pawnCaptureVectors[getPieceType(piece)] {
 			targetSquare := square + offset
-			if b.Pieces[targetSquare] != empty && getPieceSide(b.Pieces[targetSquare]) =! b.MovesNext {
+			if b.Pieces[targetSquare] != empty && getPieceSide(b.Pieces[targetSquare]) != b.MovesNext {
 				pseudoCaptures = append(pseudoCaptures, Move{square, targetSquare})
 			}
 		}
@@ -111,15 +117,15 @@ func (b *Board) GenAllowedMoves() {
 				break
 			}
 		}
-		// CHECK IS KING SAFE
-		for _, move := range append(pseudoCaptures, pseudoMoves...) {
-			capturedPiece := b.forwardMove(move)
-			if !b.isAttacked(b.Kings[-1 * b.MovesNext]) {
-				output = append(output, move)
-			}
-			b.undoMove(move, capturedPiece)
-		}
-		return output
 	}
+	// CHECK IS KING SAFE
+	for _, move := range append(pseudoCaptures, pseudoMoves...) {
+		capturedPiece := b.forwardMove(move)
+		if !b.isAttacked(b.Kings[-1 * b.MovesNext]) {
+			output = append(output, move)
+		}
+		b.undoMove(move, capturedPiece)
+	}
+	return output
 }
 

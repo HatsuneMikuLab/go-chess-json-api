@@ -3,17 +3,17 @@ package chess
 const (
 	// PIECE TYPES
 	empty = 0
-	wpawn  = 1
-	bpawn = 2
-	king   = 3
-	knight = 4
-	bishop = 5
-	rook   = 6
-	queen  = 7
+	wpawn byte = 1
+	bpawn byte = 2
+	king byte = 3
+	knight byte = 4
+	bishop byte = 5
+	rook byte = 6
+	queen byte = 7
 
 	// SIDES
-	white = 1
-	black = -1
+	white int8 = 1
+	black int8 = -1
 
 	// PIECE MOVE OFFSETS REPRESENTATION:
 	up        = -16 // WE RESERVED 8 BITS FOR OFFBOARD DETECTION FUNCTION
@@ -51,7 +51,7 @@ func isOnBoard(square int) bool {
 }
 
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]
-func getPieceSide(piece byte) int {
+func getPieceSide(piece byte) int8 {
 	if piece >> 3 == 0 {
 		return 1
 	}
