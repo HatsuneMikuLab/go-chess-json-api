@@ -2,6 +2,7 @@ package chess
 
 type PiecesMap map[int]byte
 type KingsMap map[int8]int
+//type CastlePerm map[int8]bool
 type Move [2]int
 
 type Board struct {
@@ -14,9 +15,18 @@ type Board struct {
 }
 
 func SetupStartPosition() *Board {
-	return &Board {
-
+	board := &Board{}
+	board.Pieces = PiecesMap{
+		112: brook, 113: bknight, 114: bbishop, 115: bqueen, 116: bking, 117: bbishop, 118: bknight, 119: brook,
+		96: bpawn, 97: bpawn, 98: bpawn, 99: bpawn, 100: bpawn, 101: bpawn, 102: bpawn, 103: bpawn,
+		16: wpawn, 17: wpawn, 18: wpawn, 19: wpawn, 20: wpawn, 21: wpawn, 22: wpawn, 23: wpawn,
+		0: wrook, 1: wknight, 2: wbishop, 3: wqueen, 4: wking, 5: wbishop, 6: wknight, 7: wrook,
 	}
+	board.Kings[white] = 4
+	board.Kings[black] = 116
+	board.MovesNext = white
+	board.CastlePerm = 0b1111
+	return board
 }
 
 func (b *Board) forwardMove(move Move) byte { // [0]FROM [1]TO
@@ -102,14 +112,14 @@ func (b *Board) GenAllowedMoves() []Move {
 			}
 		}
 		// FIND ALL PSEUDO-VALID PAWN CAPTURES
-		for _, offset := range pawnCaptureVectors[getPieceType(piece)] {
+		for _, offset := range pawnCaptureVectors[piece] {
 			targetSquare := square + offset
 			if b.Pieces[targetSquare] != empty && getPieceSide(b.Pieces[targetSquare]) != b.MovesNext {
 				pseudoCaptures = append(pseudoCaptures, Move{square, targetSquare})
 			}
 		}
 		// FIND ALL PSEUDO-VALID PAWN MOVES
-		for _, offset := range pawnMoveVectors[getPieceType(piece)] {
+		for _, offset := range pawnMoveVectors[piece] {
 			targetSquare := square + offset
 			if b.Pieces[targetSquare] == empty {
 				pseudoMoves = append(pseudoMoves, Move{square, targetSquare})

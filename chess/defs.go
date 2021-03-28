@@ -3,13 +3,27 @@ package chess
 const (
 	// PIECE TYPES
 	empty = 0
-	wpawn byte = 1
-	bpawn byte = 2
-	king byte = 3
-	knight byte = 4
-	bishop byte = 5
-	rook byte = 6
-	queen byte = 7
+
+	pawn byte = 0b1
+	king byte = 0b10
+	knight byte = 0b11
+	bishop byte = 0b100
+	rook byte = 0b101
+	queen byte = 0b110
+
+	wpawn byte = 0b1001
+	wking byte = 0b1010
+	wknight byte = 0b1011
+	wbishop byte = 0b1100
+	wrook byte = 0b1101
+	wqueen byte = 0b1110
+
+	bpawn byte = 0b10001
+	bking byte = 0b10010
+	bknight byte = 0b10011
+	bbishop byte = 0b10100
+	brook byte = 0b10101
+	bqueen byte = 0b10110
 
 	// SIDES
 	white int8 = 1
@@ -50,20 +64,40 @@ func isOnBoard(square int) bool {
 	return square&0x88 == 0
 }
 
+// CONVERT SQUARE INDEX TO NAME
+func index2name(square int) [2]int {
+	return [2]int{square % 16 + 'A', square / 16 + '1'}
+}
+
+// CONVERT SQUARE NAME TO INDEX
+func name2index(square [2]int) int {
+	return square[1] / 16 - '1' + square[0] % 16 - 'A'
+}
+
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]
 func getPieceSide(piece byte) int8 {
-	if piece >> 3 == 0 {
+	if piece >> 3 == 1 {
 		return 1
 	}
 	return -1
 }
 
-// TYPE IS REPRESENTED BY 3 LAST BITS, 7 IS A MAX VALUE 
+// TYPE IS REPRESENTED BY 3 LAST BITS, 6 IS A MAX VALUE 
 func getPieceType(piece byte) byte {
-	return piece & 7 
+	return piece & 0b111 
 }
 
 // PIECE GROUP REPRESENTATION: LEAPER = FALSE, RANGE = TRUE
 func isRangePiece(piece byte) bool {
-	return getPieceType(piece) > 4 // [1-4] LEAPERS, [5-7] RANGE PIECES 
+	return getPieceType(piece) > 3 // [1-3] LEAPERS, [4-6] RANGE PIECES 
 }
+
+// ENCODE PIECE 
+func encodePiece(pieceType byte, side int8) byte {
+	if side == white {
+		return pieceType & 0b111
+	}
+	return pieceType & 0b111 | 0b1000
+}
+
+
