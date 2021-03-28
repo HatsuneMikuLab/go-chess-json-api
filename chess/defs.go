@@ -69,11 +69,6 @@ func index2name(square int) [2]int {
 	return [2]int{square % 16 + 'A', square / 16 + '1'}
 }
 
-// CONVERT SQUARE NAME TO INDEX
-func name2index(square [2]int) int {
-	return square[1] / 16 - '1' + square[0] % 16 - 'A'
-}
-
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]
 func getPieceSide(piece byte) int8 {
 	if piece >> 3 == 1 {
@@ -92,12 +87,5 @@ func isRangePiece(piece byte) bool {
 	return getPieceType(piece) > 3 // [1-3] LEAPERS, [4-6] RANGE PIECES 
 }
 
-// ENCODE PIECE 
-func encodePiece(pieceType byte, side int8) byte {
-	if side == white {
-		return pieceType & 0b111
-	}
-	return pieceType & 0b111 | 0b1000
-}
 
 
