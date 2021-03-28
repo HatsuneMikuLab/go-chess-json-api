@@ -11,6 +11,22 @@ type Board struct {
 	HalfmoveClock byte
 }
 
+func (b *Board) ForwardMove(move [2]int) byte { // [0]FROM [1]TO
+	capturedPiece := b.Pieces[move[1]]
+	b.Pieces[move[1]] = b.Pieces[move[0]]
+	b.Pieces[move[0]] = empty
+	return capturedPiece 
+}
+
+func (b *Board) UndoMove(move [2]int, capturedPiece byte) { // [0]FROM [1]TO
+	b.Pieces[move[0]] = b.Pieces[move[1]]
+	if capturedPiece == empty {
+		delete(b.Pieces, move[1])
+	} else {
+		b.Pieces[move[1]] = capturedPiece
+	}
+}
+
 func (b *Board) GenAllowedMoves() {
 	movesWithoutCapture := make([][2]int, 0, 200)
 	movesWithCapture := make([][2]int, 0, 100)
