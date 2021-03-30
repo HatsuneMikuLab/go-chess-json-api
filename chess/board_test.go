@@ -40,3 +40,18 @@ func TestUndoMove(t *testing.T) {
 		)
 	}
 }
+
+func TestIsAttacked(t *testing.T) {
+	board := SetupStartPosition()
+	board.ForwardMove(Move{name2index("a2"), name2index("a3")}) 
+	// FAKE MOVE TO MAKE POSITION WITH WHITE KING UNDER THE CHECK
+	board.ForwardMove(Move{name2index("d7"), name2index("d2")}) 
+	if !board.isAttacked(name2index("e1")) {
+		t.Errorf("TestIsAttacked is failed. \n Should return true but got false in Position: %v", board.Pieces)
+	}
+	// KILL A PAWN TO PROTECT WHITE KING
+	board.ForwardMove(Move{name2index("d1"), name2index("d2")})
+	if board.isAttacked(name2index("e1")) {
+		t.Errorf("TestIsAttacked is failed. \n Should return false but got true in Position: %v", board.Pieces)
+	}
+}

@@ -13,8 +13,8 @@ func SetupStartPosition() *Board {
 	board := &Board{}
 	board.Pieces = startPosition
 	board.Kings = KingsMap{
-		white: 4,
-		black: 116,
+		white: 4, //E1
+		black: 116, //E8
 	}
 	board.MovesNext = white
 	board.CastlePerm = 0b1111
