@@ -6,24 +6,26 @@ type KingsMap map[int8]int
 type Move [2]int
 
 type Board struct {
-	Pieces        PiecesMap
-	Kings         KingsMap
-	MovesNext     int8
-	CastlePerm    byte
-	EnPassant     byte
-	HalfmoveClock byte
+	Pieces        PiecesMap `json:"pieces"`
+	Kings         KingsMap `json:"kings"`
+	MovesNext     int8 `json:"moves_next"`
+	CastlePerm    byte `json:"castle_perm"`
+	EnPassant     byte `json:"en_passant"`
+	HalfmoveClock byte `json:"halfmove_clock"`
 }
 
 func SetupStartPosition() *Board {
 	board := &Board{}
 	board.Pieces = PiecesMap{
-		112: brook, 113: bknight, 114: bbishop, 115: bqueen, 116: bking, 117: bbishop, 118: bknight, 119: brook,
-		96: bpawn, 97: bpawn, 98: bpawn, 99: bpawn, 100: bpawn, 101: bpawn, 102: bpawn, 103: bpawn,
-		16: wpawn, 17: wpawn, 18: wpawn, 19: wpawn, 20: wpawn, 21: wpawn, 22: wpawn, 23: wpawn,
-		0: wrook, 1: wknight, 2: wbishop, 3: wqueen, 4: wking, 5: wbishop, 6: wknight, 7: wrook,
+		0: brook, 1: bknight, 2: bbishop, 3: bqueen, 4: bking, 5: bbishop, 6: bknight, 7: brook,
+		16: bpawn, 17: bpawn, 18: bpawn, 19: bpawn, 20: bpawn, 21: bpawn, 22: bpawn, 23: bpawn,
+		96: wpawn, 97: wpawn, 98: wpawn, 99: wpawn, 100: wpawn, 101: wpawn, 102: wpawn, 103: wpawn,
+		112: wrook, 113: wknight, 114: wbishop, 115: wqueen, 116: wking, 117: wbishop, 118: wknight, 119: wrook,
 	}
-	board.Kings[white] = 4
-	board.Kings[black] = 116
+	board.Kings = KingsMap{
+		white: 4,
+		black: 116,
+	}
 	board.MovesNext = white
 	board.CastlePerm = 0b1111
 	return board
@@ -35,7 +37,7 @@ func (b *Board) forwardMove(move Move) byte { // [0]FROM [1]TO
 	}
 	capturedPiece := b.Pieces[move[1]]
 	b.Pieces[move[1]] = b.Pieces[move[0]]
-	b.Pieces[move[0]] = empty
+	delete(b.Pieces, move[0])
 	b.MovesNext = -1 * b.MovesNext
 	return capturedPiece 
 }

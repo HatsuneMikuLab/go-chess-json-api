@@ -66,7 +66,11 @@ func isOnBoard(square int) bool {
 
 // CONVERT SQUARE INDEX TO NAME
 func index2name(square int) [2]int {
-	return [2]int{square % 16 + 'A', square / 16 + '1'}
+	return [2]int{square % 16 + 'A', 8 - square / 16 + '1'}
+}
+
+func name2index(square string) int {
+	return int((8 - square[1] - '1') / 16 + (square[0] - 'A') % 16)
 }
 
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]
