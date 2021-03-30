@@ -1,5 +1,9 @@
 package chess
 
+type PiecesMap map[int]byte
+type KingsMap map[int8]int
+type Move [2]int
+
 const (
 	// PIECE TYPES
 	empty = 0
@@ -57,6 +61,12 @@ var (
 		wpawn: []int{up, up<<1},
 		bpawn: []int{down, down<<1},
 	}
+	startPosition = PiecesMap{
+		0: brook, 1: bknight, 2: bbishop, 3: bqueen, 4: bking, 5: bbishop, 6: bknight, 7: brook,
+		16: bpawn, 17: bpawn, 18: bpawn, 19: bpawn, 20: bpawn, 21: bpawn, 22: bpawn, 23: bpawn,
+		96: wpawn, 97: wpawn, 98: wpawn, 99: wpawn, 100: wpawn, 101: wpawn, 102: wpawn, 103: wpawn,
+		112: wrook, 113: wknight, 114: wbishop, 115: wqueen, 116: wking, 117: wbishop, 118: wknight, 119: wrook,
+	}
 )
 
 // SQUARE REPRESENTATION: 1[OFFBOARD] 111[RANK] 1[OFFBOARD] 111[FILE]
@@ -67,10 +77,6 @@ func isOnBoard(square int) bool {
 // CONVERT SQUARE INDEX TO NAME
 func index2name(square int) [2]int {
 	return [2]int{square % 16 + 'A', 8 - square / 16 + '1'}
-}
-
-func name2index(square string) int {
-	return int((8 - square[1] - '1') / 16 + (square[0] - 'A') % 16)
 }
 
 // PIECE REPRESENTATION: 0000 1[SIDE] 111[TYPE]

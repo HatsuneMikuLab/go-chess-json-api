@@ -1,10 +1,5 @@
 package chess
 
-type PiecesMap map[int]byte
-type KingsMap map[int8]int
-//type CastlePerm map[int8]bool
-type Move [2]int
-
 type Board struct {
 	Pieces        PiecesMap `json:"pieces"`
 	Kings         KingsMap `json:"kings"`
@@ -16,12 +11,7 @@ type Board struct {
 
 func SetupStartPosition() *Board {
 	board := &Board{}
-	board.Pieces = PiecesMap{
-		0: brook, 1: bknight, 2: bbishop, 3: bqueen, 4: bking, 5: bbishop, 6: bknight, 7: brook,
-		16: bpawn, 17: bpawn, 18: bpawn, 19: bpawn, 20: bpawn, 21: bpawn, 22: bpawn, 23: bpawn,
-		96: wpawn, 97: wpawn, 98: wpawn, 99: wpawn, 100: wpawn, 101: wpawn, 102: wpawn, 103: wpawn,
-		112: wrook, 113: wknight, 114: wbishop, 115: wqueen, 116: wking, 117: wbishop, 118: wknight, 119: wrook,
-	}
+	board.Pieces = startPosition
 	board.Kings = KingsMap{
 		white: 4,
 		black: 116,
@@ -31,7 +21,10 @@ func SetupStartPosition() *Board {
 	return board
 }
 
-func (b *Board) forwardMove(move Move) byte { // [0]FROM [1]TO
+func (b *Board) ForwardMove(move Move) byte { // [0]FROM [1]TO
+	if b.Pieces[move[0]] == empty {
+		return empty  //imposible move
+	}
 	if b.Pieces[move[0]] == king {
 		b.Kings[b.MovesNext] = move[1]
 	}
@@ -42,7 +35,10 @@ func (b *Board) forwardMove(move Move) byte { // [0]FROM [1]TO
 	return capturedPiece 
 }
 
-func (b *Board) undoMove(move Move, capturedPiece byte) { // [0]FROM [1]TO
+func (b *Board) UndoMove(move Move, capturedPiece byte) { // [0]FROM [1]TO
+	if b.Pieces[move[1]] == empty {
+		return
+	}
 	if b.Pieces[move[1]] == king {
 		b.Kings[b.MovesNext] = move[0]
 	}
@@ -132,11 +128,11 @@ func (b *Board) GenAllowedMoves() []Move {
 	}
 	// CHECK IS KING SAFE
 	for _, move := range append(pseudoCaptures, pseudoMoves...) {
-		capturedPiece := b.forwardMove(move)
+		capturedPiece := b.ForwardMove(move)
 		if !b.isAttacked(b.Kings[-1 * b.MovesNext]) {
 			output = append(output, move)
 		}
-		b.undoMove(move, capturedPiece)
+		b.UndoMove(move, capturedPiece)
 	}
 	return output
 }
