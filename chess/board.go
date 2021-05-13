@@ -21,6 +21,10 @@ func SetupStartPosition() *Board {
 	return board
 }
 
+func RenderBoard() map[string]string {
+	
+}
+
 func (b *Board) ForwardMove(move Move) Piece { // [0]FROM [1]TO
 	if b.Pieces[move[0]] == king { // TRACKING KING POSITION
 		b.Kings[b.MovesNext] = move[1]
@@ -45,34 +49,26 @@ func (b *Board) UndoMove(move Move, capturedPiece Piece) { // [0]FROM [1]TO
 	b.MovesNext = -1 * b.MovesNext
 }
 
-func (b *Board) isAttacked(square Square) bool {
-	for pieceType, offsetSlice := range jumpVectors {
+func (b *Board) isAttacked(square Square, bySide Side) bool {
+	for pieceType, offsetSlice := range moveVectors {
 		for _, offset := range offsetSlice {
 			iSquare := square + offset
-			if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == pieceType {
-				return true
-			}
-		}
-	}
-	for pieceType, offsetSlice := range rangeVectors {
-		for _, offset := range offsetSlice {
-			iSquare := square + offset
-			for isOnBoard(iSquare) && b.Pieces[iSquare] == empty {
+			for rangePieces[pieceType] && isOnBoard(iSquare) && b.Pieces[iSquare] == empty {
 				iSquare += offset
 			}
-			if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == pieceType {
+			if getPieceSide(b.Pieces[iSquare]) == bySide && getPieceType(b.Pieces[iSquare]) == pieceType {
 				return true
 			}
 		}
 	}
 
 	activePawns := wpawn
-	if b.MovesNext == black {
+	if bySide == black {
 		activePawns = bpawn
 	}
 	for _, offset := range pawnCaptureVectors[activePawns] {
 		iSquare := square - offset
-		if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == activePawns {
+		if b.Pieces[iSquare] == activePawns {
 			return true
 		}
 	}
@@ -85,42 +81,40 @@ func (b *Board) GenAllowedMoves() []Move {
 	output := make([]Move, 0, 200)
 
 	for square, piece := range b.Pieces {
-		if getPieceSide(piece) != b.MovesNext {
+		if getPieceSide(piece) != b.MovesNext { // YOU CANNOT MOVE OPPONENT's PIECES
 			continue
 		}
 		// FIND ALL PSEUDO-VALID MOVES AND CAPTURES FOR ALL PIECE TYPES EXCEPT PAWN
 		for _, offset := range moveVectors[getPieceType(piece)] {
-			targetSquare := square + offset
-			maxDistance := 1
-			if isRangePiece(piece) {
-				maxDistance = 7
-			}
-			
-			for isOnBoard(targetSquare) && maxDistance > 0 {
-				if b.Pieces[targetSquare] == empty {
-					pseudoMoves = append(pseudoMoves, Move{square, targetSquare})
-				} else if getPieceSide(b.Pieces[targetSquare]) != b.MovesNext {
-					pseudoCaptures = append(pseudoCaptures, Move{square, targetSquare})
+			iSquare := square + offset
+			for isOnBoard(iSquare) {
+				if b.Pieces[iSquare] == empty {
+					pseudoMoves = append(pseudoMoves, Move{square, iSquare})
+				} else if getPieceSide(b.Pieces[iSquare]) != b.MovesNext {
+					pseudoCaptures = append(pseudoCaptures, Move{square, iSquare})
 					break;
 				} else {
 					break;
 				}
-				targetSquare += offset
-				maxDistance--;
+				if rangePieces[getPieceType(piece)] {
+					iSquare += offset
+				} else {
+					break;
+				}
 			}
 		}
 		// FIND ALL PSEUDO-VALID PAWN CAPTURES
 		for _, offset := range pawnCaptureVectors[piece] {
-			targetSquare := square + offset
-			if b.Pieces[targetSquare] != empty && getPieceSide(b.Pieces[targetSquare]) != b.MovesNext {
-				pseudoCaptures = append(pseudoCaptures, Move{square, targetSquare})
+			iSquare := square + offset
+			if isOnBoard(iSquare) && getPieceSide(b.Pieces[iSquare]) != b.MovesNext {
+				pseudoCaptures = append(pseudoCaptures, Move{square, iSquare})
 			}
 		}
 		// FIND ALL PSEUDO-VALID PAWN MOVES
 		for _, offset := range pawnMoveVectors[piece] {
-			targetSquare := square + offset
-			if b.Pieces[targetSquare] == empty {
-				pseudoMoves = append(pseudoMoves, Move{square, targetSquare})
+			iSquare := square + offset
+			if isOnBoard(iSquare) && b.Pieces[iSquare] == empty {
+				pseudoMoves = append(pseudoMoves, Move{square, iSquare})
 			} else {
 				break
 			}
@@ -129,11 +123,11 @@ func (b *Board) GenAllowedMoves() []Move {
 	// CHECK IS KING SAFE
 	for _, move := range append(pseudoCaptures, pseudoMoves...) {
 		capturedPiece := b.ForwardMove(move)
-		if !b.isAttacked(b.Kings[-1 * b.MovesNext]) {
+		if !b.isAttacked(b.Kings[-1 * b.MovesNext], b.MovesNext) {
 			output = append(output, move)
 		}
 		b.UndoMove(move, capturedPiece)
 	}
-	return output
+	return append(pseudoCaptures, pseudoMoves...)
 }
 

@@ -48,13 +48,12 @@ const (
 )
 
 var (
+	rangePieces = map[Piece]bool{ queen: true, rook: true, bishop: true }
 	// BLACK AND WHITE USE SAME VECTORS FOR ALL PIECES EXCEPT PAWNS
-	jumpVectors = map[Piece][]Square {
+	moveVectors = map[Piece][]Square {
 		king: []Square{upRight, right, downRight, down, downLeft, left, upLeft, up},
 		knight: []Square{(up << 1) + right, (right << 1) + up, (right << 1) + down, (down << 1) + right,
-			(down << 1) + left, (left << 1) + down, (left << 1) + up, (up << 1) + left}
-	}
-	rangeVectors = map[Piece][]Square {
+			(down << 1) + left, (left << 1) + down, (left << 1) + up, (up << 1) + left},
 		bishop: []Square{upRight, downRight, downLeft, upLeft},
 		rook: []Square{right, down, left, up},
 		queen: []Square{upRight, right, downRight, down, downLeft, left, upLeft, up},
@@ -80,27 +79,20 @@ func isOnBoard(square Square) bool {
 	return square&0x88 == 0
 }
 
-// CONVERT SQUARE INDEX TO NAME
-func index2name(square int) [2]int {
-	return [2]int{square % 16 + 'A', 8 - square / 16 + '1'}
-}
-
 // PIECE REPRESENTATION: 000 11[SIDE] 111[TYPE] (TOTAL: 5 bits)
 func getPieceSide(piece Piece) Side {
-	if piece >> 3 == 0 {
+	if piece >> 3 == 1 {
 		return 1
+	} else if piece >> 3 == 2 {
+		return -1
+	} else {
+		return 0
 	}
-	return -1
 }
 
 // PIECE REPRESENTATION: 000 11[SIDE] 111[TYPE] (TOTAL: 5 bits)
 func getPieceType(piece Piece) Piece {
 	return piece & 0b111 
-}
-
-// PIECE GROUP REPRESENTATION: LEAPER = FALSE, RANGE = TRUE
-func isRangePiece(piece Piece) bool {
-	return getPieceType(piece) > 3 // [1-3] LEAPERS, [4-6] RANGE PIECES 
 }
 
 
