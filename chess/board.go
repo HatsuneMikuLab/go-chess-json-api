@@ -21,8 +21,14 @@ func SetupStartPosition() *Board {
 	return board
 }
 
-func RenderBoard() map[string]string {
-	
+func (b *Board) Render() [][]string {
+	output := make([][]string, 8, 8) 
+	for rank := 0; rank < 8; rank++ {
+		for file := 0; file < 8; file++ {
+			output[rank] = append(output[rank], pieceNames[b.Pieces[getSquareIndex(file, rank)]])
+		}
+	}
+	return output
 }
 
 func (b *Board) ForwardMove(move Move) Piece { // [0]FROM [1]TO

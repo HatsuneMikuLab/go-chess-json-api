@@ -5,15 +5,6 @@ import (
 	"testing"
 )
 
-// CONVERT SQUARE INDEX TO NAME
-func index2name(square Square) [2]Square {
-	return [2]Square{square % 16 + 'A', 8 - square / 16 + '1'}
-}
-
-func name2index(square string) Square {
-	return Square(0 - (square[1] - '8') * 16 + (square[0] - 'a') % 16)
-}
-
 func TestForwardMove(t *testing.T) {
 	board := SetupStartPosition()
 	b2b4 := Move{name2index("b2"), name2index("b4")}
@@ -52,12 +43,12 @@ func TestIsAttacked(t *testing.T) {
 	// FAKE MOVE TO MAKE POSITION WITH WHITE KING UNDER THE CHECK
 	board.ForwardMove(Move{name2index("d7"), name2index("d2")}) 
 	if !board.isAttacked(name2index("e1"), -1 * board.MovesNext) {
-		t.Errorf("TestIsAttacked is failed. \n Should return true but got false in Position: %v", board.Pieces)
+		t.Errorf("TestIsAttacked is failed. \n Should return true but got false in Position: %v", board.Render())
 	}
 	// KILL A PAWN TO PROTECT WHITE KING
 	board.ForwardMove(Move{name2index("d1"), name2index("d2")})
 	if board.isAttacked(name2index("e1"), board.MovesNext) {
-		t.Errorf("TestIsAttacked is failed. \n Should return false but got true in Position: %v", board.Pieces)
+		t.Errorf("TestIsAttacked is failed. \n Should return false but got true in Position: %v", board.Render())
 	}
 }
 

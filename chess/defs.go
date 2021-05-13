@@ -72,11 +72,39 @@ var (
 		96: wpawn, 97: wpawn, 98: wpawn, 99: wpawn, 100: wpawn, 101: wpawn, 102: wpawn, 103: wpawn,
 		112: wrook, 113: wknight, 114: wbishop, 115: wqueen, 116: wking, 117: wbishop, 118: wknight, 119: wrook,
 	}
+	pieceNames = map[Piece]string {
+		empty: "--",
+		wpawn: "WP",
+		wking: "WK",
+		wknight: "WN",
+		wbishop: "WB",
+		wrook: "WR",
+		wqueen: "WQ",
+		bpawn: "BP",
+		bking: "BK",
+		bknight: "BN",
+		bbishop: "BB",
+		brook: "BR",
+		bqueen: "BQ",
+	}
 )
 
 // SQUARE REPRESENTATION: 1[OFFBOARD] 111[RANK] 1[OFFBOARD] 111[FILE] (TOTAL: 8 bits)
 func isOnBoard(square Square) bool {
 	return square&0x88 == 0
+}
+
+func getSquareIndex(file int, rank int) Square {
+	return Square((7 - rank) << 4 + file)
+}
+
+// CONVERT SQUARE INDEX TO NAME
+func index2name(square Square) string {
+	return string([]rune{rune(square % 8 + 'A'), 8 - rune('8' - square / 16)})
+}
+
+func name2index(square string) Square {
+	return Square(0 - (square[1] - '8') * 16 + (square[0] - 'a') % 16)
 }
 
 // PIECE REPRESENTATION: 000 11[SIDE] 111[TYPE] (TOTAL: 5 bits)
