@@ -3,7 +3,7 @@ package chess
 type Board struct {
 	Pieces        PiecesMap `json:"pieces"`
 	Kings         KingsMap `json:"kings"`
-	MovesNext     int8 `json:"moves_next"`
+	MovesNext     Side `json:"moves_next"`
 	CastlePerm    byte `json:"castle_perm"`
 	EnPassant     byte `json:"en_passant"`
 	HalfmoveClock byte `json:"halfmove_clock"`
@@ -21,11 +21,8 @@ func SetupStartPosition() *Board {
 	return board
 }
 
-func (b *Board) ForwardMove(move Move) byte { // [0]FROM [1]TO
-	if b.Pieces[move[0]] == empty {
-		return empty  //imposible move
-	}
-	if b.Pieces[move[0]] == king {
+func (b *Board) ForwardMove(move Move) Piece { // [0]FROM [1]TO
+	if b.Pieces[move[0]] == king { // TRACKING KING POSITION
 		b.Kings[b.MovesNext] = move[1]
 	}
 	capturedPiece := b.Pieces[move[1]]
@@ -35,44 +32,47 @@ func (b *Board) ForwardMove(move Move) byte { // [0]FROM [1]TO
 	return capturedPiece 
 }
 
-func (b *Board) UndoMove(move Move, capturedPiece byte) { // [0]FROM [1]TO
-	if b.Pieces[move[1]] == empty {
-		return
-	}
-	if b.Pieces[move[1]] == king {
+func (b *Board) UndoMove(move Move, capturedPiece Piece) { // [0]FROM [1]TO
+	if b.Pieces[move[1]] == king { // TRACKING KING POSITION
 		b.Kings[b.MovesNext] = move[0]
 	}
 	b.Pieces[move[0]] = b.Pieces[move[1]]
-	b.MovesNext = -1 * b.MovesNext
 	if capturedPiece == empty {
 		delete(b.Pieces, move[1])
 	} else {
 		b.Pieces[move[1]] = capturedPiece
 	}
+	b.MovesNext = -1 * b.MovesNext
 }
 
-func (b *Board) isAttacked(square int) bool {
-	for pieceType, offsetSlice := range moveVectors {
+func (b *Board) isAttacked(square Square) bool {
+	for pieceType, offsetSlice := range jumpVectors {
 		for _, offset := range offsetSlice {
-			targetSquare := square + offset
-			for isOnBoard(targetSquare) && b.Pieces[targetSquare] == empty {
-				targetSquare += offset
-			}
-			if isOnBoard(targetSquare) && 
-			getPieceSide(b.Pieces[targetSquare]) == b.MovesNext &&
-			getPieceType(b.Pieces[targetSquare]) == pieceType {
+			iSquare := square + offset
+			if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == pieceType {
 				return true
 			}
 		}
 	}
-	opponentPawns := bpawn
-	if b.MovesNext == black {
-		opponentPawns = wpawn
+	for pieceType, offsetSlice := range rangeVectors {
+		for _, offset := range offsetSlice {
+			iSquare := square + offset
+			for isOnBoard(iSquare) && b.Pieces[iSquare] == empty {
+				iSquare += offset
+			}
+			if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == pieceType {
+				return true
+			}
+		}
 	}
-	for _, offset := range pawnCaptureVectors[opponentPawns] {
-		targetSquare := square + offset
-		if isOnBoard(targetSquare) && 
-		getPieceSide(b.Pieces[targetSquare]) == b.MovesNext {
+
+	activePawns := wpawn
+	if b.MovesNext == black {
+		activePawns = bpawn
+	}
+	for _, offset := range pawnCaptureVectors[activePawns] {
+		iSquare := square - offset
+		if getPieceSide(b.Pieces[iSquare]) == b.MovesNext && getPieceType(b.Pieces[iSquare]) == activePawns {
 			return true
 		}
 	}
@@ -88,13 +88,13 @@ func (b *Board) GenAllowedMoves() []Move {
 		if getPieceSide(piece) != b.MovesNext {
 			continue
 		}
-		maxDistance := 1
-		if isRangePiece(piece) {
-			maxDistance = 7
-		}
 		// FIND ALL PSEUDO-VALID MOVES AND CAPTURES FOR ALL PIECE TYPES EXCEPT PAWN
 		for _, offset := range moveVectors[getPieceType(piece)] {
 			targetSquare := square + offset
+			maxDistance := 1
+			if isRangePiece(piece) {
+				maxDistance = 7
+			}
 			
 			for isOnBoard(targetSquare) && maxDistance > 0 {
 				if b.Pieces[targetSquare] == empty {

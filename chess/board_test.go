@@ -55,3 +55,41 @@ func TestIsAttacked(t *testing.T) {
 		t.Errorf("TestIsAttacked is failed. \n Should return false but got true in Position: %v", board.Pieces)
 	}
 }
+
+func TestGenAllowedMoves(t *testing.T) {
+	board := SetupStartPosition()
+	allowedMoves := make(map[Move]bool, 200)
+
+	for _, move := range board.GenAllowedMoves() {
+		allowedMoves[move] = true
+	}
+	// ALL POSSIBLE FIRST MOVES
+	shouldBe := map[Move]bool {
+		{name2index("b1"), name2index("a3")}: true,
+		{name2index("b1"), name2index("c3")}: true,
+		{name2index("g1"), name2index("f3")}: true,
+		{name2index("g1"), name2index("h3")}: true,
+		{name2index("a2"), name2index("a3")}: true,
+		{name2index("a2"), name2index("a4")}: true,
+		{name2index("b2"), name2index("b3")}: true,
+		{name2index("b2"), name2index("b4")}: true,
+		{name2index("c2"), name2index("c3")}: true,
+		{name2index("c2"), name2index("c4")}: true,
+		{name2index("d2"), name2index("d3")}: true,
+		{name2index("d2"), name2index("d4")}: true,
+		{name2index("e2"), name2index("e3")}: true,
+		{name2index("e2"), name2index("e4")}: true,
+		{name2index("f2"), name2index("f3")}: true,
+		{name2index("f2"), name2index("f4")}: true,
+		{name2index("g2"), name2index("g3")}: true,
+		{name2index("g2"), name2index("g4")}: true,
+		{name2index("h2"), name2index("h3")}: true,
+		{name2index("h2"), name2index("h4")}: true,
+	}
+	if !reflect.DeepEqual(allowedMoves, shouldBe) {
+		t.Errorf(
+			"TestGenAllowedMoves is failed. \n Should be %v but got %v",
+			shouldBe, allowedMoves, 
+		)
+	}
+}
