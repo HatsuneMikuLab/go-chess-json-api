@@ -1,14 +1,5 @@
 package chess
 
-type Board struct {
-	Pieces        PiecesMap `json:"pieces"`
-	Kings         KingsMap `json:"kings"`
-	MovesNext     Side `json:"moves_next"`
-	CastlePerm    byte `json:"castle_perm"`
-	EnPassant     byte `json:"en_passant"`
-	HalfmoveClock byte `json:"halfmove_clock"`
-}
-
 func SetupStartPosition() *Board {
 	board := &Board{}
 	board.Pieces = startPosition

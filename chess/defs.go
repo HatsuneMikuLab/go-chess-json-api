@@ -6,6 +6,16 @@ type Side int8 // 1 FOR WHITE AND -1 FOR BLACK
 type Move [2]Square
 type PiecesMap map[Square]Piece
 type KingsMap map[Side]Square
+type Position [8][8]Square
+
+type Board struct {
+	Pieces        PiecesMap `json:"pieces"`
+	Kings         KingsMap `json:"kings"`
+	MovesNext     Side `json:"moves_next"`
+	CastlePerm    byte `json:"castle_perm"`
+	EnPassant     byte `json:"en_passant"`
+	HalfmoveClock byte `json:"halfmove_clock"`
+}
 
 const (
 	// PIECE TYPES
@@ -72,6 +82,8 @@ var (
 		96: wpawn, 97: wpawn, 98: wpawn, 99: wpawn, 100: wpawn, 101: wpawn, 102: wpawn, 103: wpawn,
 		112: wrook, 113: wknight, 114: wbishop, 115: wqueen, 116: wking, 117: wbishop, 118: wknight, 119: wrook,
 	}
+	fileNames = []rune { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' }
+	rankNames = []rune { '8', '7', '6', '5', '4', '3', '2', '1' }
 	pieceNames = map[Piece]string {
 		empty: "--",
 		wpawn: "WP",
@@ -92,6 +104,11 @@ var (
 // SQUARE REPRESENTATION: 1[OFFBOARD] 111[RANK] 1[OFFBOARD] 111[FILE] (TOTAL: 8 bits)
 func isOnBoard(square Square) bool {
 	return square&0x88 == 0
+}
+
+func printSquare(square Square) string {
+	output := make([]rune, 0, 2)
+	return string(append(output, fileNames[square % 16], rankNames[square / 16]))
 }
 
 func getSquareIndex(file int, rank int) Square {
